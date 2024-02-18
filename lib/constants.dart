@@ -1,7 +1,7 @@
 const double width = 300;
 const double height = 300;
 
-const double interval = 15;
+const int interval = 15;
 
 const double gravity = 0.05;
 const double range = 15;

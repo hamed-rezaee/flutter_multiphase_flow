@@ -17,6 +17,9 @@ int numNeighbors = 0;
 double count = 0;
 double press = 0;
 
+bool mouseDown = false;
+Offset position = Offset.zero;
+
 void main() => runApp(const MainApp());
 
 class MainApp extends StatefulWidget {
@@ -40,8 +43,12 @@ class _MainAppState extends State<MainApp> {
     }
 
     Timer.periodic(
-      const Duration(milliseconds: 16),
+      const Duration(milliseconds: interval),
       (timer) {
+        if (mouseDown) {
+          pour(position.dx, position.dy);
+        }
+
         setState(() {});
       },
     );
@@ -57,10 +64,16 @@ class _MainAppState extends State<MainApp> {
             height: height,
             color: Colors.white,
             child: GestureDetector(
-              onPanUpdate: (details) {
-                pour(details.localPosition.dx, details.localPosition.dy);
-
-                setState(() {});
+              onPanDown: (p) {
+                position = p.localPosition;
+                mouseDown = true;
+              },
+              onPanEnd: (_) {
+                mouseDown = false;
+              },
+              onPanUpdate: (p) {
+                position = p.localPosition;
+                mouseDown = true;
               },
               child: CustomPaint(
                 size: const Size(width, height),
@@ -79,13 +92,13 @@ class _MainAppState extends State<MainApp> {
 
   void pour(double x, double y) {
     for (var i = -4; i <= 4; i++) {
-      particles.add(Particle(x + i * 10, y, (count ~/ 10) % 4));
+      particles.add(Particle(x + i * 10, y, (count ~/ 10) % 5));
 
       numParticles++;
 
       particles[numParticles - 1].vy = 5;
 
-      if (numParticles >= 1000) {
+      if (numParticles > 2000) {
         particles.removeAt(0);
         numParticles--;
       }
