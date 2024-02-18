@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter_multiphase_flow/constants.dart';
 import 'package:flutter_multiphase_flow/particle.dart';
 
 class Neighbor {
@@ -10,13 +11,6 @@ class Neighbor {
   double ny = 0;
   double weight = 0;
 
-  // Constants - should be taken from flow class;
-  final double RANGE = 16;
-  final double PRESSURE = 1;
-  final double PRESSURE_NEAR = 1;
-  final double DENSITY = 2.5;
-  final double VISCOSITY = 0.1;
-
   void setParticle(Particle p1, Particle p2) {
     this.p1 = p1;
     this.p2 = p2;
@@ -26,14 +20,14 @@ class Neighbor {
 
     distance = _calculateDistance();
 
-    weight = 1 - distance / RANGE;
+    weight = 1 - distance / range;
 
     var density = weight * weight;
 
     p1.density += density;
     p2.density += density;
 
-    density *= weight * PRESSURE_NEAR;
+    density *= weight * pressureNear;
 
     p1.densityNear += density;
     p2.densityNear += density;
@@ -55,15 +49,15 @@ class Neighbor {
     var p2 = this.p2;
 
     if (this.p1.type != this.p2.type) {
-      p = (p1.density + p2.density - DENSITY * 1.5) * PRESSURE;
+      p = (p1.density + p2.density - density * 1.5) * pressure;
     } else {
-      p = (p1.density + p2.density - DENSITY * 2) * PRESSURE;
+      p = (p1.density + p2.density - density * 2) * pressure;
     }
 
-    var pn = (p1.densityNear + p2.densityNear) * PRESSURE_NEAR;
+    var pn = (p1.densityNear + p2.densityNear) * pressureNear;
 
     var pressureWeight = weight * (p + weight * pn);
-    var viscosityWeight = weight * VISCOSITY;
+    var viscosityWeight = weight * viscosity;
 
     var fx = nx * pressureWeight;
     var fy = ny * pressureWeight;
