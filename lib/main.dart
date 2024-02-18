@@ -9,13 +9,13 @@ import 'package:flutter_multiphase_flow/particle_painter.dart';
 
 List<Particle> particles = [];
 List<Neighbor> neighbors = [];
+List<List<Grid>> grids = [];
 
 int numParticles = 0;
 int numNeighbors = 0;
 
 double count = 0;
 double press = 0;
-List<List<Grid>> grids = [];
 
 void main() => runApp(const MainApp());
 
@@ -62,7 +62,11 @@ class _MainAppState extends State<MainApp> {
           child: Center(
             child: CustomPaint(
               size: const Size(width, height),
-              painter: ParticlePainter(particles: particles, grids: grids),
+              painter: ParticlePainter(
+                particles: particles,
+                neighbors: neighbors,
+                grids: grids,
+              ),
             ),
           ),
         ),

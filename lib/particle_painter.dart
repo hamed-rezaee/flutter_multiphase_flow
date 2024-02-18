@@ -6,9 +6,14 @@ import 'package:flutter_multiphase_flow/neighbor.dart';
 import 'package:flutter_multiphase_flow/particle.dart';
 
 class ParticlePainter extends CustomPainter {
-  ParticlePainter({required this.particles, required this.grids});
+  ParticlePainter({
+    required this.particles,
+    required this.neighbors,
+    required this.grids,
+  });
 
   List<Particle> particles;
+  List<Neighbor> neighbors = [];
   List<List<Grid>> grids;
 
   @override
