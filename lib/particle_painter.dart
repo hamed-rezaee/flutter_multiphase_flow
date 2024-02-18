@@ -18,22 +18,15 @@ class ParticlePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()
-        ..color = Colors.black
-        ..style = PaintingStyle.stroke,
-    );
-
     move(canvas, size, particles);
   }
 
   void move(Canvas canvas, Size size, List<Particle> particles) {
     count++;
 
-    updateGrid();
+    updateGrids();
     findNeighbors();
-    calculateForce();
+    calcForce();
 
     for (int i = 0; i < numParticles; i++) {
       Particle p = particles[i];
@@ -44,17 +37,20 @@ class ParticlePainter extends CustomPainter {
     }
   }
 
-  void updateGrid() {
-    for (int i = 0; i < numGrids; i++) {
-      for (int j = 0; j < numGrids; j++) {
-        grids[i][j].particles = [];
+  void updateGrids() {
+    Particle p;
+    for (var i = 0; i < numGrids; i++) {
+      for (var j = 0; j < numGrids; j++) {
+        // Is this meant to clear the grid?
+        grids[i][j].particles.clear();
         grids[i][j].numParticles = 0;
       }
     }
 
-    for (int i = 0; i < numParticles; i++) {
-      Particle p = particles[i];
+    for (var i = 0; i < numParticles; i++) {
+      p = particles[i];
 
+      // Zero all of the things!
       p.fx = 0;
       p.fy = 0;
       p.density = 0;
@@ -63,27 +59,36 @@ class ParticlePainter extends CustomPainter {
       p.gx = (p.x * invGridSize).floor();
       p.gy = (p.y * invGridSize).floor();
 
-      if (p.gx < 0) p.gx = 0;
-      if (p.gy < 0) p.gy = 0;
+      if (p.gx < 0) {
+        p.gx = 0;
+      }
 
-      if (p.gx > numGrids - 1) p.gx = numGrids - 1;
-      if (p.gy > numGrids - 1) p.gy = numGrids - 1;
+      if (p.gy < 0) {
+        p.gy = 0;
+      }
+
+      if (p.gx > numGrids - 1) {
+        p.gx = numGrids - 1;
+      }
+
+      if (p.gy > numGrids - 1) {
+        p.gy = numGrids - 1;
+      }
     }
   }
 
   void findNeighbors() {
-    int i;
     Particle p;
     numNeighbors = 0;
 
-    for (i = 0; i < numParticles; i++) {
+    for (var i = 0; i < numParticles; i++) {
       p = particles[i];
 
-      bool xMin = p.gx != 0;
-      bool xMax = p.gx != (numGrids - 1);
+      var xMin = p.gx != 0;
+      var xMax = p.gx != (numGrids - 1);
 
-      bool yMin = p.gy != 0;
-      bool yMax = p.gy != (numGrids - 1);
+      var yMin = p.gy != 0;
+      var yMax = p.gy != (numGrids - 1);
 
       findNeighborsInGrid(p, grids[p.gx][p.gy]);
 
@@ -123,25 +128,28 @@ class ParticlePainter extends CustomPainter {
     }
   }
 
-  void findNeighborsInGrid(Particle p, Grid g) {
-    for (int i = 0; i < g.numParticles; i++) {
-      Particle q = g.particles[i];
+  void findNeighborsInGrid(Particle pi, Grid g) {
+    Particle pj;
+    double distance;
 
-      double distance = (p.x - q.x) * (p.x - q.x) + (p.y - q.y) * (p.y - q.y);
+    for (var j = 0; j < g.numParticles; j++) {
+      pj = g.particles[j];
+
+      distance = (pi.x - pj.x) * (pi.x - pj.x) + (pi.y - pj.y) * (pi.y - pj.y);
 
       if (distance < range2) {
         if (neighbors.length == numNeighbors) {
           neighbors.add(Neighbor());
         }
 
-        neighbors[numNeighbors++].setParticle(p, q);
+        neighbors[numNeighbors++].setParticle(pi, pj);
       }
     }
   }
 
-  void calculateForce() {
-    for (int i = 0; i < numNeighbors; i++) {
-      neighbors[i].calculateForce();
+  void calcForce() {
+    for (var i = 0; i < numNeighbors; i++) {
+      neighbors[i].calcForce();
     }
   }
 
@@ -176,10 +184,10 @@ class ParticlePainter extends CustomPainter {
   void drawParticle(Canvas canvas, Particle p) {
     canvas.drawCircle(
       Offset(p.x, p.y),
-      12,
+      3,
       Paint()
         ..color = p.getColor()
-        ..style = PaintingStyle.stroke,
+        ..style = PaintingStyle.fill,
     );
   }
 

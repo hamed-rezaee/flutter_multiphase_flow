@@ -1,67 +1,80 @@
 import 'dart:math';
 
-import 'package:flutter_multiphase_flow/constants.dart';
 import 'package:flutter_multiphase_flow/particle.dart';
 
 class Neighbor {
-  Particle p = Particle.empty();
-  Particle q = Particle.empty();
+  Particle p1 = Particle.empty();
+  Particle p2 = Particle.empty();
   double distance = 0;
   double nx = 0;
   double ny = 0;
   double weight = 0;
 
-  setParticle(Particle p, Particle q) {
-    p = p;
-    q = q;
+  // Constants - should be taken from flow class;
+  final double RANGE = 16;
+  final double PRESSURE = 1;
+  final double PRESSURE_NEAR = 1;
+  final double DENSITY = 2.5;
+  final double VISCOSITY = 0.1;
 
-    nx = p.x - q.x;
-    ny = p.y - q.y;
+  void setParticle(Particle p1, Particle p2) {
+    this.p1 = p1;
+    this.p2 = p2;
 
-    distance = sqrt(nx * nx + ny * ny);
+    nx = p1.x - p2.x;
+    ny = p1.y - p2.y;
 
-    weight = 1 - distance / range;
+    distance = _calculateDistance();
+
+    weight = 1 - distance / RANGE;
 
     var density = weight * weight;
 
-    p.density += density;
-    q.density += density;
+    p1.density += density;
+    p2.density += density;
 
-    density *= weight * pressureNear;
+    density *= weight * PRESSURE_NEAR;
 
-    p.densityNear += density;
-    q.densityNear += density;
+    p1.densityNear += density;
+    p2.densityNear += density;
 
+    // Inverted distance
     var invDistance = 1 / distance;
 
     nx *= invDistance;
     ny *= invDistance;
   }
 
-  void calculateForce() {
-    double t = 0;
+  double _calculateDistance() {
+    return sqrt(nx * nx + ny * ny);
+  }
 
-    if (p.type != q.type) {
-      t = (p.density + p.density - density * 1.5) * pressure;
+  void calcForce() {
+    double p;
+    var p1 = this.p1;
+    var p2 = this.p2;
+
+    if (this.p1.type != this.p2.type) {
+      p = (p1.density + p2.density - DENSITY * 1.5) * PRESSURE;
     } else {
-      t = (p.density + p.density - density * 2) * pressure;
+      p = (p1.density + p2.density - DENSITY * 2) * PRESSURE;
     }
 
-    var pn = (p.densityNear + p.densityNear) * pressureNear;
+    var pn = (p1.densityNear + p2.densityNear) * PRESSURE_NEAR;
 
-    var pressureWeight = weight * (t + weight * pn);
-    var viscocityWeight = weight * viscosity;
+    var pressureWeight = weight * (p + weight * pn);
+    var viscosityWeight = weight * VISCOSITY;
 
     var fx = nx * pressureWeight;
     var fy = ny * pressureWeight;
 
-    fx += (q.vx - p.vx) * viscocityWeight;
-    fy += (q.vy - p.vy) * viscocityWeight;
+    fx += (p2.vx - p1.vx) * viscosityWeight;
+    fy += (p2.vy - p1.vy) * viscosityWeight;
 
-    p.fx += fx;
-    p.fy += fy;
+    p1.fx += fx;
+    p1.fy += fy;
 
-    q.fx -= fx;
-    q.fy -= fy;
+    p2.fx -= fx;
+    p2.fy -= fy;
   }
 }

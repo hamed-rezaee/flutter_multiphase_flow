@@ -51,21 +51,24 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        body: GestureDetector(
-          onPanDown: (details) {
-            pour(details.localPosition.dx, details.localPosition.dy);
+        body: Center(
+          child: Container(
+            width: width,
+            height: height,
+            color: Colors.white,
+            child: GestureDetector(
+              onPanUpdate: (details) {
+                pour(details.localPosition.dx, details.localPosition.dy);
 
-            setState(() {});
-          },
-          onPanEnd: (details) {},
-          onPanUpdate: (details) {},
-          child: Center(
-            child: CustomPaint(
-              size: const Size(width, height),
-              painter: ParticlePainter(
-                particles: particles,
-                neighbors: neighbors,
-                grids: grids,
+                setState(() {});
+              },
+              child: CustomPaint(
+                size: const Size(width, height),
+                painter: ParticlePainter(
+                  particles: particles,
+                  neighbors: neighbors,
+                  grids: grids,
+                ),
               ),
             ),
           ),
@@ -75,16 +78,14 @@ class _MainAppState extends State<MainApp> {
   }
 
   void pour(double x, double y) {
-    for (int i = -4; i < 5; i++) {
-      particles.add(
-        Particle(x + i * 10, y, (count / 10 % 5).floor()),
-      );
+    for (var i = -4; i <= 4; i++) {
+      particles.add(Particle(x + i * 10, y, (count ~/ 10) % 4));
 
       numParticles++;
 
       particles[numParticles - 1].vy = 5;
 
-      if (numParticles > 1000) {
+      if (numParticles >= 1000) {
         particles.removeAt(0);
         numParticles--;
       }
