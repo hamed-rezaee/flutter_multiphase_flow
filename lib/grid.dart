@@ -4,8 +4,8 @@ class Grid {
   List<Particle> particles = [];
   double numParticles = 0;
 
-  void addParticle(Particle p) {
-    particles.add(p);
-    numParticles += 1;
+  void addParticle(Particle particle) {
+    particles.add(particle);
+    numParticles++;
   }
 }
