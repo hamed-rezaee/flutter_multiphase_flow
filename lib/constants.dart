@@ -1,7 +1,9 @@
 const double width = 300;
 const double height = 300;
 
-const int interval = 15;
+const int interval = 16;
+
+const int maxParticles = 2000;
 
 const double gravity = 0.05;
 const double range = 15;
