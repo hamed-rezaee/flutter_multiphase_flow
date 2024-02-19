@@ -2,14 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_multiphase_flow/constants.dart';
-import 'package:flutter_multiphase_flow/grid.dart';
-import 'package:flutter_multiphase_flow/neighbor.dart';
 import 'package:flutter_multiphase_flow/particle.dart';
 import 'package:flutter_multiphase_flow/particle_painter.dart';
 
 List<Particle> particles = [];
-List<Neighbor> neighbors = [];
-List<List<Grid>> grids = [];
 
 int numParticles = 0;
 int numNeighbors = 0;
@@ -30,17 +26,12 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
+  StreamController<List<Particle>> streamController =
+      StreamController<List<Particle>>();
+
   @override
   void initState() {
     super.initState();
-
-    for (int i = 0; i < numGrids; i++) {
-      grids.add([]);
-
-      for (int j = 0; j < numGrids; j++) {
-        grids[i].add(Grid());
-      }
-    }
 
     Timer.periodic(
       const Duration(milliseconds: interval),
@@ -49,7 +40,7 @@ class _MainAppState extends State<MainApp> {
           pour(position.dx, position.dy);
         }
 
-        setState(() {});
+        streamController.add(particles);
       },
     );
   }
@@ -75,13 +66,15 @@ class _MainAppState extends State<MainApp> {
                 position = p.localPosition;
                 mouseDown = true;
               },
-              child: CustomPaint(
-                size: const Size(width, height),
-                painter: ParticlePainter(
-                  particles: particles,
-                  neighbors: neighbors,
-                  grids: grids,
-                ),
+              child: StreamBuilder<List<Particle>>(
+                stream: streamController.stream,
+                initialData: const <Particle>[],
+                builder: (context, snapshot) {
+                  return CustomPaint(
+                    size: const Size(width, height),
+                    painter: ParticlePainter(particles: particles),
+                  );
+                },
               ),
             ),
           ),
@@ -92,13 +85,12 @@ class _MainAppState extends State<MainApp> {
 
   void pour(double x, double y) {
     for (var i = -4; i <= 4; i++) {
-      particles.add(Particle(x + i * 10, y, (count ~/ 10) % 5));
+      particles.add(Particle(x + i * 10, y, (count ~/ 10) % 4));
+      particles[numParticles].vy = 5;
 
       numParticles++;
 
-      particles[numParticles - 1].vy = 5;
-
-      if (numParticles > 2000) {
+      if (numParticles > maxParticles) {
         particles.removeAt(0);
         numParticles--;
       }

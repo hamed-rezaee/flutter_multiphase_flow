@@ -6,18 +6,23 @@ import 'package:flutter_multiphase_flow/neighbor.dart';
 import 'package:flutter_multiphase_flow/particle.dart';
 
 class ParticlePainter extends CustomPainter {
-  ParticlePainter({
-    required this.particles,
-    required this.neighbors,
-    required this.grids,
-  });
+  ParticlePainter({required this.particles});
 
   List<Particle> particles;
-  List<Neighbor> neighbors = [];
-  List<List<Grid>> grids;
+
+  final List<Neighbor> neighbors = [];
+  final List<List<Grid>> grids = [];
 
   @override
   void paint(Canvas canvas, Size size) {
+    for (int i = 0; i < numGrids; i++) {
+      grids.add([]);
+
+      for (int j = 0; j < numGrids; j++) {
+        grids[i].add(Grid());
+      }
+    }
+
     move(canvas, size, particles);
   }
 
@@ -41,7 +46,6 @@ class ParticlePainter extends CustomPainter {
     Particle p;
     for (var i = 0; i < numGrids; i++) {
       for (var j = 0; j < numGrids; j++) {
-        // Is this meant to clear the grid?
         grids[i][j].particles.clear();
         grids[i][j].numParticles = 0;
       }
@@ -50,7 +54,6 @@ class ParticlePainter extends CustomPainter {
     for (var i = 0; i < numParticles; i++) {
       p = particles[i];
 
-      // Zero all of the things!
       p.fx = 0;
       p.fy = 0;
       p.density = 0;
@@ -184,9 +187,9 @@ class ParticlePainter extends CustomPainter {
   void drawParticle(Canvas canvas, Particle p) {
     canvas.drawCircle(
       Offset(p.x, p.y),
-      3,
+      2.5,
       Paint()
-        ..color = p.getColor()
+        ..color = p.color
         ..style = PaintingStyle.fill,
     );
   }

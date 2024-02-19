@@ -32,7 +32,6 @@ class Neighbor {
     p1.densityNear += density;
     p2.densityNear += density;
 
-    // Inverted distance
     var invDistance = 1 / distance;
 
     nx *= invDistance;
