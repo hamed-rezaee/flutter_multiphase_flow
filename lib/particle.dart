@@ -17,7 +17,7 @@ class Particle {
   int gy = 0;
   int type = 0;
 
-  Color getColor() => switch (type) {
+  Color get color => switch (type) {
         0 => Colors.blue,
         1 => Colors.red,
         2 => Colors.green,
