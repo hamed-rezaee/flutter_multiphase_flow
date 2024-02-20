@@ -4,19 +4,19 @@ import 'package:flutter_multiphase_flow/constants.dart';
 import 'package:flutter_multiphase_flow/particle.dart';
 
 class Neighbor {
-  Particle p1 = Particle.empty();
-  Particle p2 = Particle.empty();
+  Particle particle1 = Particle.empty();
+  Particle particle2 = Particle.empty();
   double distance = 0;
-  double nx = 0;
-  double ny = 0;
+  double normalX = 0;
+  double normalY = 0;
   double weight = 0;
 
-  void setParticle(Particle p1, Particle p2) {
-    this.p1 = p1;
-    this.p2 = p2;
+  void setParticles(Particle p1, Particle p2) {
+    particle1 = p1;
+    particle2 = p2;
 
-    nx = p1.x - p2.x;
-    ny = p1.y - p2.y;
+    normalX = particle1.x - particle2.x;
+    normalY = particle1.y - particle2.y;
 
     distance = _calculateDistance();
 
@@ -34,32 +34,29 @@ class Neighbor {
 
     var invDistance = 1 / distance;
 
-    nx *= invDistance;
-    ny *= invDistance;
-  }
-
-  double _calculateDistance() {
-    return sqrt(nx * nx + ny * ny);
+    normalX *= invDistance;
+    normalY *= invDistance;
   }
 
   void calculateForce() {
-    double p;
-    var p1 = this.p1;
-    var p2 = this.p2;
+    double force = 0;
 
-    if (this.p1.type != this.p2.type) {
-      p = (p1.density + p2.density - density * 1.5) * pressure;
+    var p1 = particle1;
+    var p2 = particle2;
+
+    if (particle1.type != particle2.type) {
+      force = (p1.density + p2.density - density * 1.5) * pressure;
     } else {
-      p = (p1.density + p2.density - density * 2) * pressure;
+      force = (p1.density + p2.density - density * 2) * pressure;
     }
 
     var pn = (p1.densityNear + p2.densityNear) * pressureNear;
 
-    var pressureWeight = weight * (p + weight * pn);
+    var pressureWeight = weight * (force + weight * pn);
     var viscosityWeight = weight * viscosity;
 
-    var fx = nx * pressureWeight;
-    var fy = ny * pressureWeight;
+    var fx = normalX * pressureWeight;
+    var fy = normalY * pressureWeight;
 
     fx += (p2.vx - p1.vx) * viscosityWeight;
     fy += (p2.vy - p1.vy) * viscosityWeight;
@@ -70,4 +67,6 @@ class Neighbor {
     p2.fx -= fx;
     p2.fy -= fy;
   }
+
+  double _calculateDistance() => sqrt(normalX * normalX + normalY * normalY);
 }
