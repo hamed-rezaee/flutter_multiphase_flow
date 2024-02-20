@@ -85,7 +85,7 @@ class _MainAppState extends State<MainApp> {
   void pour(double x, double y) {
     for (var i = -4; i <= 4; i++) {
       particles.add(Particle(x + i * 10, y, (count ~/ 10) % 4));
-      particles.last.vy = 5;
+      particles.last.velocityY = 5;
 
       if (particles.length > maxParticles) {
         particles.removeAt(0);

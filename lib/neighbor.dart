@@ -15,8 +15,8 @@ class Neighbor {
     particle1 = p1;
     particle2 = p2;
 
-    normalX = particle1.x - particle2.x;
-    normalY = particle1.y - particle2.y;
+    normalX = particle1.positionX - particle2.positionX;
+    normalY = particle1.positionY - particle2.positionY;
 
     distance = _calculateDistance();
 
@@ -55,17 +55,17 @@ class Neighbor {
     var pressureWeight = weight * (force + weight * pn);
     var viscosityWeight = weight * viscosity;
 
-    var fx = normalX * pressureWeight;
-    var fy = normalY * pressureWeight;
+    var forceX = normalX * pressureWeight;
+    var forceY = normalY * pressureWeight;
 
-    fx += (p2.vx - p1.vx) * viscosityWeight;
-    fy += (p2.vy - p1.vy) * viscosityWeight;
+    forceX += (p2.velocityX - p1.velocityX) * viscosityWeight;
+    forceY += (p2.velocityY - p1.velocityY) * viscosityWeight;
 
-    p1.fx += fx;
-    p1.fy += fy;
+    p1.forceX += forceX;
+    p1.forceY += forceY;
 
-    p2.fx -= fx;
-    p2.fy -= fy;
+    p2.forceX -= forceX;
+    p2.forceY -= forceY;
   }
 
   double _calculateDistance() => sqrt(normalX * normalX + normalY * normalY);
