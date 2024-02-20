@@ -42,7 +42,7 @@ class Neighbor {
     return sqrt(nx * nx + ny * ny);
   }
 
-  void calcForce() {
+  void calculateForce() {
     double p;
     var p1 = this.p1;
     var p2 = this.p2;

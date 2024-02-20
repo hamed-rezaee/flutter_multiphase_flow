@@ -7,7 +7,6 @@ import 'package:flutter_multiphase_flow/particle_painter.dart';
 
 List<Particle> particles = [];
 
-int numParticles = 0;
 int numNeighbors = 0;
 
 double count = 0;
@@ -86,13 +85,10 @@ class _MainAppState extends State<MainApp> {
   void pour(double x, double y) {
     for (var i = -4; i <= 4; i++) {
       particles.add(Particle(x + i * 10, y, (count ~/ 10) % 4));
-      particles[numParticles].vy = 5;
+      particles.last.vy = 5;
 
-      numParticles++;
-
-      if (numParticles > maxParticles) {
+      if (particles.length > maxParticles) {
         particles.removeAt(0);
-        numParticles--;
       }
     }
   }

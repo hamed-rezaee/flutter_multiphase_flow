@@ -1,11 +1,9 @@
 import 'package:flutter_multiphase_flow/particle.dart';
 
 class Grid {
-  List<Particle> particles = [];
-  double numParticles = 0;
+  final List<Particle> particles = [];
 
   void addParticle(Particle particle) {
     particles.add(particle);
-    numParticles++;
   }
 }

@@ -3,6 +3,9 @@ const double height = 300;
 
 const int interval = 16;
 
+const double particleDiameter = 5;
+const double particleRadius = particleDiameter / 2;
+
 const int maxParticles = 2000;
 
 const double gravity = 0.05;
