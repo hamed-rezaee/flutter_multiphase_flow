@@ -8,188 +8,182 @@ import 'package:flutter_multiphase_flow/particle.dart';
 class ParticlePainter extends CustomPainter {
   ParticlePainter({required this.particles});
 
-  List<Particle> particles;
+  final List<Particle> particles;
 
-  final List<Neighbor> neighbors = [];
-  final List<List<Grid>> grids = [];
+  final List<Neighbor> _neighbors = [];
+  final List<List<Grid>> _grids = [];
 
   @override
   void paint(Canvas canvas, Size size) {
+    _initializeGrid();
+    _move(canvas, size, particles);
+  }
+
+  void _initializeGrid() {
     for (int i = 0; i < numGrids; i++) {
-      grids.add([]);
+      _grids.add([]);
 
       for (int j = 0; j < numGrids; j++) {
-        grids[i].add(Grid());
+        _grids[i].add(Grid());
       }
     }
-
-    move(canvas, size, particles);
   }
 
-  void move(Canvas canvas, Size size, List<Particle> particles) {
+  void _move(Canvas canvas, Size size, List<Particle> particles) {
     count++;
 
-    updateGrids();
-    findNeighbors();
-    calcForce();
+    _updateGrids();
+    _findNeighbors();
+    _calculateForce();
 
-    for (int i = 0; i < numParticles; i++) {
-      Particle p = particles[i];
-
-      moveParticle(p);
-
-      drawParticle(canvas, p);
+    for (Particle particle in particles) {
+      _moveParticle(particle);
+      _drawParticle(canvas, particle);
     }
   }
 
-  void updateGrids() {
-    Particle p;
+  void _updateGrids() {
     for (var i = 0; i < numGrids; i++) {
       for (var j = 0; j < numGrids; j++) {
-        grids[i][j].particles.clear();
-        grids[i][j].numParticles = 0;
+        _grids[i][j].particles.clear();
       }
     }
 
-    for (var i = 0; i < numParticles; i++) {
-      p = particles[i];
+    for (Particle particle in particles) {
+      particle.fx = 0;
+      particle.fy = 0;
+      particle.density = 0;
+      particle.densityNear = 0;
 
-      p.fx = 0;
-      p.fy = 0;
-      p.density = 0;
-      p.densityNear = 0;
+      particle.gx = (particle.x * invGridSize).floor();
+      particle.gy = (particle.y * invGridSize).floor();
 
-      p.gx = (p.x * invGridSize).floor();
-      p.gy = (p.y * invGridSize).floor();
-
-      if (p.gx < 0) {
-        p.gx = 0;
+      if (particle.gx < 0) {
+        particle.gx = 0;
       }
 
-      if (p.gy < 0) {
-        p.gy = 0;
+      if (particle.gy < 0) {
+        particle.gy = 0;
       }
 
-      if (p.gx > numGrids - 1) {
-        p.gx = numGrids - 1;
+      if (particle.gx > numGrids - 1) {
+        particle.gx = numGrids - 1;
       }
 
-      if (p.gy > numGrids - 1) {
-        p.gy = numGrids - 1;
+      if (particle.gy > numGrids - 1) {
+        particle.gy = numGrids - 1;
       }
     }
   }
 
-  void findNeighbors() {
-    Particle p;
+  void _findNeighbors() {
     numNeighbors = 0;
 
-    for (var i = 0; i < numParticles; i++) {
-      p = particles[i];
+    for (Particle particle in particles) {
+      var xMin = particle.gx != 0;
+      var xMax = particle.gx != (numGrids - 1);
 
-      var xMin = p.gx != 0;
-      var xMax = p.gx != (numGrids - 1);
+      var yMin = particle.gy != 0;
+      var yMax = particle.gy != (numGrids - 1);
 
-      var yMin = p.gy != 0;
-      var yMax = p.gy != (numGrids - 1);
-
-      findNeighborsInGrid(p, grids[p.gx][p.gy]);
+      _findNeighborsInGrid(particle, _grids[particle.gx][particle.gy]);
 
       if (xMin) {
-        findNeighborsInGrid(p, grids[p.gx - 1][p.gy]);
+        _findNeighborsInGrid(particle, _grids[particle.gx - 1][particle.gy]);
       }
 
       if (xMax) {
-        findNeighborsInGrid(p, grids[p.gx + 1][p.gy]);
+        _findNeighborsInGrid(particle, _grids[particle.gx + 1][particle.gy]);
       }
 
       if (yMin) {
-        findNeighborsInGrid(p, grids[p.gx][p.gy - 1]);
+        _findNeighborsInGrid(particle, _grids[particle.gx][particle.gy - 1]);
       }
 
       if (yMax) {
-        findNeighborsInGrid(p, grids[p.gx][p.gy + 1]);
+        _findNeighborsInGrid(particle, _grids[particle.gx][particle.gy + 1]);
       }
 
       if (xMin && yMin) {
-        findNeighborsInGrid(p, grids[p.gx - 1][p.gy - 1]);
+        _findNeighborsInGrid(
+            particle, _grids[particle.gx - 1][particle.gy - 1]);
       }
 
       if (xMin && yMax) {
-        findNeighborsInGrid(p, grids[p.gx - 1][p.gy + 1]);
+        _findNeighborsInGrid(
+            particle, _grids[particle.gx - 1][particle.gy + 1]);
       }
 
       if (xMax && yMin) {
-        findNeighborsInGrid(p, grids[p.gx + 1][p.gy - 1]);
+        _findNeighborsInGrid(
+            particle, _grids[particle.gx + 1][particle.gy - 1]);
       }
 
       if (xMax && yMax) {
-        findNeighborsInGrid(p, grids[p.gx + 1][p.gy + 1]);
+        _findNeighborsInGrid(
+            particle, _grids[particle.gx + 1][particle.gy + 1]);
       }
 
-      grids[p.gx][p.gy].addParticle(p);
+      _grids[particle.gx][particle.gy].addParticle(particle);
     }
   }
 
-  void findNeighborsInGrid(Particle pi, Grid g) {
-    Particle pj;
-    double distance;
-
-    for (var j = 0; j < g.numParticles; j++) {
-      pj = g.particles[j];
-
-      distance = (pi.x - pj.x) * (pi.x - pj.x) + (pi.y - pj.y) * (pi.y - pj.y);
+  void _findNeighborsInGrid(Particle particle, Grid grid) {
+    for (Particle gridParticle in grid.particles) {
+      double distance =
+          (particle.x - gridParticle.x) * (particle.x - gridParticle.x) +
+              (particle.y - gridParticle.y) * (particle.y - gridParticle.y);
 
       if (distance < range2) {
-        if (neighbors.length == numNeighbors) {
-          neighbors.add(Neighbor());
+        if (_neighbors.length == numNeighbors) {
+          _neighbors.add(Neighbor());
         }
 
-        neighbors[numNeighbors++].setParticle(pi, pj);
+        _neighbors[numNeighbors++].setParticle(particle, gridParticle);
       }
     }
   }
 
-  void calcForce() {
+  void _calculateForce() {
     for (var i = 0; i < numNeighbors; i++) {
-      neighbors[i].calcForce();
+      _neighbors[i].calculateForce();
     }
   }
 
-  void moveParticle(Particle p) {
-    p.vy += gravity;
+  void _moveParticle(Particle particle) {
+    particle.vy += gravity;
 
-    if (p.density > 0) {
-      p.vx += p.fx / (p.density * 0.9 + 0.1);
-      p.vy += p.fy / (p.density * 0.9 + 0.1);
+    if (particle.density > 0) {
+      particle.vx += particle.fx / (particle.density * 0.9 + 0.1);
+      particle.vy += particle.fy / (particle.density * 0.9 + 0.1);
     }
 
-    p.x += p.vx;
-    p.y += p.vy;
+    particle.x += particle.vx;
+    particle.y += particle.vy;
 
-    if (p.x < 5) {
-      p.vx += (5 - p.x) * 0.5 - p.vx * 0.5;
+    if (particle.x < particleDiameter) {
+      particle.vx += (particleDiameter - particle.x) / 2 - particle.vx / 2;
     }
 
-    if (p.x > 275) {
-      p.vx += (275 - p.x) * 0.5 - p.vx * 0.5;
+    if (particle.x > width) {
+      particle.vx += (width - particle.x) / 2 - particle.vx / 2;
     }
 
-    if (p.y < 5) {
-      p.vy += (5 - p.y) * 0.5 - p.vy * 0.5;
+    if (particle.y < particleDiameter) {
+      particle.vy += (particleDiameter - particle.y) / 2 - particle.vy / 2;
     }
 
-    if (p.y > 275) {
-      p.vy += (275 - p.y) * 0.5 - p.vy * 0.5;
+    if (particle.y > height) {
+      particle.vy += (height - particle.y) / 2 - particle.vy / 2;
     }
   }
 
-  void drawParticle(Canvas canvas, Particle p) {
+  void _drawParticle(Canvas canvas, Particle particle) {
     canvas.drawCircle(
-      Offset(p.x, p.y),
-      2.5,
+      Offset(particle.x, particle.y),
+      particleDiameter / 2,
       Paint()
-        ..color = p.color
+        ..color = particle.color
         ..style = PaintingStyle.fill,
     );
   }
